@@ -1,8 +1,9 @@
 #include "server/xdg_shell.h"
 #include "server/server.h"
-#include "server/ui.h"
 #include "server/surface.h"
+#include "server/ui.h"
 #include "util/alloc.h"
+#include "util/list.h"
 #include "util/prelude.h"
 #include "xdg-shell-server-protocol.h"
 #include <inttypes.h>
@@ -313,6 +314,8 @@ xdg_surface_resource_destroy(struct wl_resource *resource) {
     server_surface_set_role(xdg_surface->parent, &xdg_surface_role, nullptr);
     wl_list_remove(&xdg_surface->link);
 
+    list_uint32_destroy(&xdg_surface->serials);
+
     free(xdg_surface);
 }
 
@@ -320,13 +323,20 @@ static void
 xdg_surface_ack_configure(struct wl_client *client, struct wl_resource *resource, uint32_t serial) {
     struct server_xdg_surface *xdg_surface = wl_resource_get_user_data(resource);
 
-    if (serial_ring_consume(&xdg_surface->serials, serial) != 0) {
+    ssize_t i = 0;
+    for (; i < xdg_surface->serials.len; i++) {
+        if (xdg_surface->serials.data[i] == serial) {
+            break;
+        }
+    }
+    if (i == xdg_surface->serials.len) {
         wl_resource_post_error(resource, XDG_SURFACE_ERROR_INVALID_SERIAL,
                                "invalid serial %" PRIu32 " given to xdg_surface.ack_configure",
                                serial);
         return;
     }
 
+    list_uint32_remove_range(&xdg_surface->serials, 0, i + 1);
     xdg_surface->initial_ack = true;
 }
 
@@ -425,6 +435,8 @@ xdg_wm_base_get_xdg_surface(struct wl_client *client, struct wl_resource *resour
     wl_resource_set_implementation(xdg_surface->resource, &xdg_surface_impl, xdg_surface,
                                    xdg_surface_resource_destroy);
 
+    xdg_surface->serials = list_uint32_create();
+
     wl_list_insert(&xdg_client->surfaces, &xdg_surface->link);
     xdg_surface->xdg_wm_base = xdg_client;
     xdg_surface->parent = surface;
@@ -498,11 +510,10 @@ server_xdg_wm_base_create(struct server *server) {
 
 void
 server_xdg_surface_send_configure(struct server_xdg_surface *xdg_surface) {
-    uint32_t serial = next_serial(xdg_surface->resource);
-    if (serial_ring_push(&xdg_surface->serials, serial) != 0) {
-        wl_resource_post_no_memory(xdg_surface->resource);
-        return;
-    }
+    uint32_t serial = wl_display_next_serial(
+        wl_client_get_display(wl_resource_get_client(xdg_surface->resource)));
+
+    list_uint32_append(&xdg_surface->serials, serial);
     xdg_surface_send_configure(xdg_surface->resource, serial);
 }
 

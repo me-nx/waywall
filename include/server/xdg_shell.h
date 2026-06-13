@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util/serial.h"
+#include "util/list.h"
 #include <stdint.h>
 #include <wayland-server-core.h>
 #include <wayland-util.h>
@@ -27,7 +27,7 @@ struct server_xdg_surface {
     struct server_xdg_client *xdg_wm_base;
     struct server_surface *parent;
     struct server_xdg_toplevel *child;
-    struct serial_ring serials;
+    struct list_uint32 serials;
     bool initial_commit;
     bool initial_ack;
 };

@@ -2,14 +2,13 @@
 #include "config/config.h"
 #include "server/backend.h"
 #include "server/server.h"
-#include "server/ui.h"
 #include "server/surface.h"
+#include "server/ui.h"
 #include "server/xwayland.h"
 #include "util/alloc.h"
 #include "util/debug.h"
 #include "util/log.h"
 #include "util/prelude.h"
-#include "util/serial.h"
 #include "util/str.h"
 #include "util/syscall.h"
 #include <inttypes.h>
@@ -81,6 +80,11 @@ current_time() {
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
     return (uint32_t)((uint64_t)now.tv_sec * 1000 + (uint64_t)now.tv_nsec / 1000000);
+}
+
+static inline uint32_t
+next_serial(struct wl_resource *resource) {
+    return wl_display_next_serial(wl_client_get_display(wl_resource_get_client(resource)));
 }
 
 static void
