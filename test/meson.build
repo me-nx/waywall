@@ -1,4 +1,5 @@
 waywall_tests = {
+  'list': ['util/prelude.c'],
   'str': ['util/prelude.c', 'util/str.c']
 }
 
