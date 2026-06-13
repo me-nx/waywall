@@ -31,6 +31,16 @@
         list->len--;                                                                               \
     }                                                                                              \
                                                                                                    \
+    [[maybe_unused]] static inline void name##_remove_range(struct name *list, ssize_t a,          \
+                                                            ssize_t b) {                           \
+        ww_assert(list->len > a);                                                                  \
+        ww_assert(list->len >= b);                                                                 \
+        ww_assert(b > a);                                                                          \
+                                                                                                   \
+        memmove(list->data + a, list->data + b, (list->len - b) * sizeof(*list->data));            \
+        list->len -= (b - a);                                                                      \
+    }                                                                                              \
+                                                                                                   \
     [[maybe_unused]] static inline struct name name##_create() {                                   \
         struct name list = {};                                                                     \
         list.cap = 8;                                                                              \
