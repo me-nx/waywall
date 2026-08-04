@@ -101,7 +101,7 @@ subproc_exec(struct subproc *subproc, struct strs cmd) {
         }
 
         execvp(arg_list[0], arg_list);
-        ww_log_errno(LOG_ERROR, "failed to execvp() in child porcess");
+        ww_log_errno(LOG_ERROR, "failed to execvp() in child process");
         exit(EXIT_FAILURE);
     } else if (pid == -1) {
         // Parent process (error)
