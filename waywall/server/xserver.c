@@ -453,7 +453,7 @@ xserver_start(struct xserver *srv) {
     if (srv->pid == 0) {
         // Child process
         xserver_exec(srv, notify_fd[1], log_fd);
-        exit(EXIT_FAILURE);
+        _exit(EXIT_FAILURE);
     } else if (srv->pid == -1) {
         // Parent process (error)
         ww_log_errno(LOG_ERROR, "failed to fork xwayland");

@@ -88,11 +88,11 @@ subproc_exec(struct subproc *subproc, struct strs cmd) {
         int out = open("/dev/null", O_WRONLY);
         if (out == -1) {
             ww_log_errno(LOG_ERROR, "failed to open /dev/null in child process");
-            exit(EXIT_FAILURE);
+            _exit(EXIT_FAILURE);
         }
         if (dup2(out, STDOUT_FILENO) == -1) {
             ww_log_errno(LOG_ERROR, "failed to duplicate /dev/null to stdout in child process");
-            exit(EXIT_FAILURE);
+            _exit(EXIT_FAILURE);
         }
 
         char **arg_list = zalloc(cmd.len + 1, sizeof(*arg_list));
@@ -102,7 +102,7 @@ subproc_exec(struct subproc *subproc, struct strs cmd) {
 
         execvp(arg_list[0], arg_list);
         ww_log_errno(LOG_ERROR, "failed to execvp() in child process");
-        exit(EXIT_FAILURE);
+        _exit(EXIT_FAILURE);
     } else if (pid == -1) {
         // Parent process (error)
         ww_log_errno(LOG_ERROR, "failed to fork() child process");

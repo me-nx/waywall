@@ -145,7 +145,7 @@ cmd_wrap(const char *profile, bool allow_mc_x11, char **argv) {
         }
 
         ww_log_errno(LOG_ERROR, "failed to exec '%s' in child process", argv[0]);
-        exit(EXIT_FAILURE);
+        _exit(EXIT_FAILURE);
     } else if (ww.child == -1) {
         // Parent process (error)
         ww_log_errno(LOG_ERROR, "failed to fork child process");
