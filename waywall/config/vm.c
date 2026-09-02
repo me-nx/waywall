@@ -85,7 +85,9 @@ registry_set(lua_State *L, const char *key, void *value) {
 
 static void
 waker_destroy(struct config_vm_waker *waker) {
-    config_vm_coro_del(waker->L);
+    if (waker->L) {
+        config_vm_coro_del(waker->L);
+    }
     waker->destroy(waker, waker->data);
 
     wl_list_remove(&waker->link);
@@ -316,7 +318,13 @@ config_vm_resume(struct config_vm_waker *waker) {
     switch (ret) {
     case LUA_YIELD:
         process_yield(waker->L);
+
+        // Either a valid new waker was associated with the coroutine, in which case we do *not*
+        // want the coroutine to be deleted from the coroutines table, or no new valid waker was
+        // associated, in which case the coroutine was already deleted by process_yield.
+        waker->L = nullptr;
         waker_destroy(waker);
+
         return;
     case 0:
         // The coroutine returned a value and cannot be resumed again. Remove it from the list
