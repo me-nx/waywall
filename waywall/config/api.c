@@ -1261,7 +1261,7 @@ l_set_keyboard_shortcuts_inhibition(lua_State *L) {
     }
 
     luaL_argcheck(L, lua_type(L, ARG_INHIBIT) == LUA_TBOOLEAN, ARG_INHIBIT,
-                  "the value must be a boolean");
+                  "inhibit must be a boolean");
     bool inhibit = lua_toboolean(L, ARG_INHIBIT);
 
     lua_settop(L, ARG_INHIBIT);
